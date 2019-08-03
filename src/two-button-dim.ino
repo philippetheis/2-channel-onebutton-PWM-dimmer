@@ -5,9 +5,9 @@ LED-dimming-switch.ino
  Copyright (c) by Philippe Theis
 
  **********************
- SW Version: 0.1
- HW Version: 0.1
- Date: 20-07-2019
+ SW Version: 1.01
+ HW Version: 1.01
+ Date: 03-08-2019
  **********************
 
  The library internals are explained at
@@ -35,11 +35,21 @@ unsigned long previous_led_Millis = 0;        // will store last time LED was up
 
 //dimmer
 int lamp1 = 9;           // the PWM pin the LED is attached to
-int lamp2 = 10;           // the PWM pin the LED is attached to
+int lamp2 = 10;          // the PWM pin the LED is attached to
 int brightness = 0;    // how bright the LED is
 int fadeAmount = 5;    // how many points to fade the LED by
 int fadeoutstart = 0;
 int fadeinstart = 0;
+
+//LED
+int LED = 11;
+int LEDstate = 0;
+int LEDstateB1 = 0;
+int LEDstateB2 = 0;
+
+//key switch
+int keyswitch = 5;
+
 
 // The actions I ca do...
 typedef enum {
@@ -70,7 +80,8 @@ void setup() {
 
   pinMode(13, OUTPUT);     // sets the digital pin as output (Arduino Nano OnBoard LED)
   pinMode(9, OUTPUT);      // sets the digital pin as output (MOS-Fet Transistor)
-  pinMode(10, OUTPUT);      // sets the digital pin as output (MOS-Fet Transistor)
+  pinMode(10, OUTPUT);     // sets the digital pin as output (MOS-Fet Transistor)
+  pinMode(5, INPUT);       // sets the digital pin as input (keyswitch)
 
   // link the myClickFunction function to be called on a click event.
   button1.attachClick(button1Click);
@@ -83,12 +94,13 @@ void setup() {
   Serial.begin(9600); // open the serial port at 9600 bps:
   Serial.print("START LOGGING\n");
 
-
 } //END setup
 
 
 // main code here, to run repeatedly:
 void loop() {
+
+  keyCheck();
 
   // keep watching the push button:
   button1.tick();
@@ -98,11 +110,27 @@ void loop() {
   menuActionsB1();
   menuActionsB2();
 
+  //LED
+  ButtonLED();
+
 } // END Main loop
+
+void keyCheck() {
+  if (keyswitch == 1) {
+    analogWrite(LED, LOW);
+    digitalWrite(13, HIGH);
+    Serial.print("KEEEEEYYY ON'\n'");
+  }
+  else if (keyswitch == 0) {
+    digitalWrite(13, LOW);
+    Serial.print("KEEEEEYYY OFFFFFF'\n'");
+  }
+}
 
 void menuActionsB1() {
   if (nextActionB1 == ACTION_1_B1) {
     dim1_B1();
+    LEDstateB1 = 1;
   }
   else if (nextActionB1 == ACTION_2_B1) {
     dim2_B1();
@@ -112,12 +140,14 @@ void menuActionsB1() {
   }
   else if (nextActionB1 == ACTION_0_B1) {
     stop_B1();
+    LEDstateB1 = 0;
   }
 } // menuActions
 
 void menuActionsB2() {
   if (nextActionB2 == ACTION_1_B2) {
     dim1_B2();
+    LEDstateB2 = 1;
   }
   else if (nextActionB2 == ACTION_2_B2) {
     dim2_B2();
@@ -127,13 +157,14 @@ void menuActionsB2() {
   }
   else if (nextActionB2 == ACTION_0_B2) {
     stop_B2();
+    LEDstateB2 = 0;
   }
 } // menuActions
 
 //Dimmer 1
 void dim1_B1() {
   Serial.print("Button 1: Action 1'\n'");
-  analogWrite(lamp1, 1);
+  analogWrite(lamp1, 2);
 }
 void dim2_B1() {
   Serial.print("Button 1: Action 2'\n'");
@@ -144,14 +175,14 @@ void dim3_B1() {
   analogWrite(lamp1, 255);
 }
 void stop_B1() {
-  Serial.print("Button 1: STOP'\n'");
-  digitalWrite(9, LOW);
+    Serial.print("Button 1: STOP'\n'");
+    digitalWrite(lamp1, LOW);
 }
 
 //Dimmer 2
 void dim1_B2() {
   Serial.print("Button 2: Action 1'\n'");
-  analogWrite(lamp2, 1);
+  analogWrite(lamp2, 2);
 }
 void dim2_B2() {
   Serial.print("Button 2: Action 2'\n'");
@@ -163,31 +194,18 @@ void dim3_B2() {
 }
 void stop_B2() {
   Serial.print("Button 2: STOP'\n'");
-  digitalWrite(9, LOW);
+  digitalWrite(lamp2, LOW);
 }
 
-
-void fadein() {
-  if (fadeoutstart == 1) {
-    // fade in from min to max in increments of 5 points:
-    for (int fadeValue = 0 ; fadeValue <= 255; fadeValue += 5) {
-      // sets the value (range from 0 to 255):
-      analogWrite(lamp1, fadeValue);
-      }
-    }
-  else {
+//LED
+void ButtonLED() {
+  if ( (LEDstateB1 == 1) || (LEDstateB2 == 1) ) {
+    Serial.print("LED full'\n'");
+    analogWrite(LED, 255);
   }
-}
-
-void fadeout() {
-  if (fadeinstart == 1) {
-    // fade out from max to min in increments of 5 points:
-    for (int fadeValue = 255 ; fadeValue >= 0; fadeValue -= 5) {
-      // sets the value (range from 0 to 255):
-      analogWrite(lamp1, fadeValue);
-      }
-    }
-  else {
+  else if ( (LEDstateB1 == 0) && (LEDstateB2 == 0) ) {
+    Serial.print("LED dimm'\n'");
+    analogWrite(LED, 3);
   }
 }
 
