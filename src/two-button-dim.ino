@@ -5,8 +5,8 @@ LED-dimming-switch.ino
  Copyright (c) by Philippe Theis
 
  **********************
- SW Version: 1.01
- HW Version: 1.01
+ SW Version: 1.10
+ HW Version: 1.10
  Date: 03-08-2019
  **********************
 
@@ -91,16 +91,13 @@ void setup() {
   button1.attachDuringLongPress(button1LongPress);
   button2.attachDuringLongPress(button2LongPress);
 
-  Serial.begin(9600); // open the serial port at 9600 bps:
-  Serial.print("START LOGGING\n");
-
 } //END setup
 
 
 // main code here, to run repeatedly:
 void loop() {
 
-  keyCheck();
+  // keyCheck();
 
   // keep watching the push button:
   button1.tick();
@@ -115,17 +112,17 @@ void loop() {
 
 } // END Main loop
 
-void keyCheck() {
-  if (keyswitch == 1) {
-    analogWrite(LED, LOW);
-    digitalWrite(13, HIGH);
-    Serial.print("KEEEEEYYY ON'\n'");
-  }
-  else if (keyswitch == 0) {
-    digitalWrite(13, LOW);
-    Serial.print("KEEEEEYYY OFFFFFF'\n'");
-  }
-}
+// void keyCheck() {
+//   if (keyswitch == 1) {
+//     analogWrite(LED, LOW);
+//     digitalWrite(13, HIGH);
+//     Serial.print("KEEEEEYYY ON'\n'");
+//   }
+//   else if (keyswitch == 0) {
+//     digitalWrite(13, LOW);
+//     Serial.print("KEEEEEYYY OFFFFFF'\n'");
+//   }
+// }
 
 void menuActionsB1() {
   if (nextActionB1 == ACTION_1_B1) {
@@ -163,48 +160,38 @@ void menuActionsB2() {
 
 //Dimmer 1
 void dim1_B1() {
-  Serial.print("Button 1: Action 1'\n'");
   analogWrite(lamp1, 2);
 }
 void dim2_B1() {
-  Serial.print("Button 1: Action 2'\n'");
   analogWrite(lamp1, 15);
 }
 void dim3_B1() {
-  Serial.print("Button 1: Action 3'\n'");
   analogWrite(lamp1, 255);
 }
 void stop_B1() {
-    Serial.print("Button 1: STOP'\n'");
-    digitalWrite(lamp1, LOW);
+  digitalWrite(lamp1, LOW);
 }
 
 //Dimmer 2
 void dim1_B2() {
-  Serial.print("Button 2: Action 1'\n'");
   analogWrite(lamp2, 2);
 }
 void dim2_B2() {
-  Serial.print("Button 2: Action 2'\n'");
   analogWrite(lamp2, 15);
 }
 void dim3_B2() {
-  Serial.print("Button 2: Action 3'\n'");
   analogWrite(lamp2, 255);
 }
 void stop_B2() {
-  Serial.print("Button 2: STOP'\n'");
   digitalWrite(lamp2, LOW);
 }
 
 //LED
 void ButtonLED() {
   if ( (LEDstateB1 == 1) || (LEDstateB2 == 1) ) {
-    Serial.print("LED full'\n'");
     analogWrite(LED, 255);
   }
   else if ( (LEDstateB1 == 0) && (LEDstateB2 == 0) ) {
-    Serial.print("LED dimm'\n'");
     analogWrite(LED, 3);
   }
 }
